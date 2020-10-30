@@ -8,6 +8,15 @@ router.post("/register", async (req, res) => {
   const { error } = validateNew(user);
   if (error) return res.status(400).send(error.details[0].message);
 
+  let exsistingUser = await User.findOne({
+    email: user.email,
+  });
+
+  if (exsistingUser)
+    return res
+      .status(409)
+      .send(`${req.body.email} is already a registered email in our system.`);
+
   const salt = await bcrypt.genSalt(12);
   const password = await bcrypt.hash(user.password, salt);
 
