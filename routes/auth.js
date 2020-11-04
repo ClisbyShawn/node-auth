@@ -1,9 +1,9 @@
 const router = require("express").Router();
-const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const { User, validateNew, validateLogin } = require("../models/User");
 const auth = require("../middleware/auth");
 const errorService = require("../services/errors");
+const { hashedPassword } = require("../services/encryption");
 
 router.post("/register", async (req, res) => {
   const user = req.body;
@@ -28,8 +28,7 @@ router.post("/register", async (req, res) => {
         )
       );
 
-  const salt = await bcrypt.genSalt(12);
-  const password = await bcrypt.hash(user.password, salt);
+  const password = await hashedPassword(user.password);
 
   const newUser = await new User({
     name: user.name,
