@@ -6,7 +6,7 @@ const auth = require("../middleware/auth");
 
 router.post("/register", async (req, res) => {
   const user = req.body;
-  console.log("User", user);
+
   const { error } = validateNew(user);
   if (error) return res.status(400).send(error.details[0].message);
 
