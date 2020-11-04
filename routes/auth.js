@@ -3,12 +3,16 @@ const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const { User, validateNew, validateLogin } = require("../models/User");
 const auth = require("../middleware/auth");
+const errorService = require("../services/errors");
 
 router.post("/register", async (req, res) => {
   const user = req.body;
 
   const { error } = validateNew(user);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error)
+    return res
+      .status(400)
+      .send(errorService("Malformed Request", error.details[0].message));
 
   let exsistingUser = await User.findOne({
     email: user.email,
@@ -17,7 +21,12 @@ router.post("/register", async (req, res) => {
   if (exsistingUser)
     return res
       .status(409)
-      .send(`${req.body.email} is already a registered email in our system.`);
+      .send(
+        errorService(
+          "Exsisting Email",
+          `${user.email} already exsists in our systems.`
+        )
+      );
 
   const salt = await bcrypt.genSalt(12);
   const password = await bcrypt.hash(user.password, salt);
@@ -38,22 +47,29 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const user = req.body;
   const { error } = validateLogin(user);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error)
+    return res
+      .status(400)
+      .send(errorService("Malformed Request", error.details[0].message));
 
   const currentUser = await User.findOne({ email: user.email });
-  if (!currentUser) return res.status(400).send("Invalid email/password.");
+  if (!currentUser)
+    return res
+      .status(400)
+      .send(errorService("Incorrect Credentials", "Invalid email/password."));
 
   const isMatchingPassword = await bcrypt.compare(
     user.password,
     currentUser.password
   );
   if (!isMatchingPassword)
-    return res.status(200).send("Invalid email/password.");
+    return res
+      .status(200)
+      .send(errorService("Incorrect Credentials", "Invalid email/password."));
 
   res.status(200).send(currentUser.generateAuthToken());
 });
 
-//Get User
 router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user.id).select("-password -__v");
   res.status(200).send(user);
