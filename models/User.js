@@ -29,7 +29,10 @@ userSchema.methods.generateAuthToken = function () {
     {
       id: this._id,
     },
-    keys.jwtKey
+    keys.jwtKey,
+    {
+      expiresIn: "30d",
+    }
   );
   return token;
 };
