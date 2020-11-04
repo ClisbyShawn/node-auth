@@ -3,7 +3,7 @@ const _ = require("lodash");
 const { User, validateNew, validateLogin } = require("../models/User");
 const auth = require("../middleware/auth");
 const errorService = require("../services/errors");
-const { hashedPassword } = require("../services/encryption");
+const { encryptPassword, decryptPassword } = require("../services/encryption");
 
 router.post("/register", async (req, res) => {
   const user = req.body;
@@ -28,7 +28,7 @@ router.post("/register", async (req, res) => {
         )
       );
 
-  const password = await hashedPassword(user.password);
+  const password = await encryptPassword(user.password);
 
   const newUser = await new User({
     name: user.name,
@@ -51,22 +51,20 @@ router.post("/login", async (req, res) => {
       .status(400)
       .send(errorService("Malformed Request", error.details[0].message));
 
-  const currentUser = await User.findOne({ email: user.email });
-  if (!currentUser)
+  const dbUser = await User.findOne({ email: user.email });
+  if (!dbUser)
     return res
       .status(400)
       .send(errorService("Incorrect Credentials", "Invalid email/password."));
 
-  const isMatchingPassword = await bcrypt.compare(
-    user.password,
-    currentUser.password
-  );
+  const isMatchingPassword = decryptPassword(user.password, dbUser.password);
+
   if (!isMatchingPassword)
     return res
       .status(200)
       .send(errorService("Incorrect Credentials", "Invalid email/password."));
 
-  res.status(200).send(currentUser.generateAuthToken());
+  res.status(200).send(dbUser.generateAuthToken());
 });
 
 router.get("/me", auth, async (req, res) => {
