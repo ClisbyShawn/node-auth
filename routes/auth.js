@@ -10,23 +10,22 @@ router.post("/register", async (req, res) => {
 
   const { error } = validateNew(user);
   if (error)
-    return res
-      .status(400)
-      .send(errorService("Malformed Request", error.details[0].message));
+    return res.send(
+      errorService(400, "Malformed Request", error.details[0].message)
+    );
 
   let exsistingUser = await User.findOne({
     email: user.email,
   });
 
   if (exsistingUser)
-    return res
-      .status(409)
-      .send(
-        errorService(
-          "Exsisting Email",
-          `${user.email} already exsists in our systems.`
-        )
-      );
+    return res.send(
+      errorService(
+        409,
+        "Exsisting Email",
+        `${user.email} already exsists in our systems.`
+      )
+    );
 
   const password = await encryptPassword(user.password);
 
@@ -47,15 +46,15 @@ router.post("/login", async (req, res) => {
   const user = req.body;
   const { error } = validateLogin(user);
   if (error)
-    return res
-      .status(400)
-      .send(errorService("Malformed Request", error.details[0].message));
+    return res.send(
+      errorService(400, "Malformed Request", error.details[0].message)
+    );
 
   const dbUser = await User.findOne({ email: user.email });
   if (!dbUser)
-    return res
-      .status(400)
-      .send(errorService("Incorrect Credentials", "Invalid email/password."));
+    return res.send(
+      errorService(400, "Incorrect Credentials", "Invalid email/password.")
+    );
 
   const isMatchingPassword = await decryptPassword(
     user.password,
@@ -63,9 +62,9 @@ router.post("/login", async (req, res) => {
   );
 
   if (!isMatchingPassword)
-    return res
-      .status(200)
-      .send(errorService("Incorrect Credentials", "Invalid email/password."));
+    return res.send(
+      errorService(400, "Incorrect Credentials", "Invalid email/password.")
+    );
 
   res.status(200).send(dbUser.generateAuthToken());
 });
