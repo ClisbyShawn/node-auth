@@ -1,6 +1,5 @@
-module.exports = createError = (code, name, message) => {
+module.exports = createError = (name, message) => {
   return {
-    code,
     name,
     message,
   };
