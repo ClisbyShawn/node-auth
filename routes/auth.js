@@ -41,6 +41,7 @@ router.post("/register", async (req, res) => {
   res
     .status(200)
     .header("x-auth-token", token)
+    .header("Access-Control-Expose-Headers", "x-auth-token")
     .send(_.pick(newUser, ["_id", "name", "email", "meta_data"]));
 });
 
