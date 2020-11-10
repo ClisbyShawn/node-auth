@@ -28,6 +28,8 @@ userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
     {
       id: this._id,
+      name: this.name,
+      email: this.email,
     },
     keys.jwtKey,
     {
