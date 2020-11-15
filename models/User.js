@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema({
   },
   meta_data: {
     joined: {
-      type: Date,
-      default: Date(),
+      type: Number,
+      default: new Date().getTime(),
     },
   },
 });
