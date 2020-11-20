@@ -56,7 +56,7 @@ router.post("/login", async (req, res) => {
   const dbUser = await User.findOne({ email: user.email });
   if (!dbUser)
     return res
-      .status(400)
+      .status(404)
       .send(errorService("Incorrect Credentials", "Invalid email/password."));
 
   const isMatchingPassword = await decryptPassword(
@@ -66,7 +66,7 @@ router.post("/login", async (req, res) => {
 
   if (!isMatchingPassword)
     return res
-      .status(400)
+      .status(401)
       .send(errorService("Incorrect Credentials", "Invalid email/password."));
 
   res.status(200).send(dbUser.generateAuthToken());
